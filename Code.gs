@@ -89,21 +89,12 @@ function getStageData() {
     return line;
   }
 
-  function formatPrize(row) {
-    // Scan all columns for meaningful text (skip empty, skip pure numbers, skip time-like values)
-    var seen = {}, parts = [];
-    for (var c = 0; c < row.length; c++) {
-      var v = String(row[c] || '').trim();
-      if (!v) continue;
-      if (/^\d+$/.test(v)) continue;           // skip pure numbers
-      if (/^\d{1,2}:\d{2}$/.test(v)) continue; // skip times like 13:47
-      if (!seen[v]) { seen[v] = true; parts.push(v); }
-    }
-    return 'PRIZE GIVING  —  ' + (parts.join('  ·  ') || 'Awards Ceremony');
+  function formatPrize() {
+    return 'PRIZE GIVING';
   }
 
   function formatRow(row) {
-    return isItemRow(row) ? formatItem(row) : formatPrize(row);
+    return isItemRow(row) ? formatItem(row) : formatPrize();
   }
 
   var onStageText = null;
