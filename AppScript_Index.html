@@ -107,13 +107,13 @@
     .bars-left, .bars-right {
       position: fixed;
       bottom: 0;
-      width: 155px;
+      width: 240px;
       height: 100vh;
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      padding: 0 8px 24px;
-      gap: 5px;
+      padding: 0 10px 24px;
+      gap: 4px;
       z-index: 1;
       pointer-events: none;
     }
@@ -121,7 +121,7 @@
     .bars-right { right: 0; }
 
     .eq-bar {
-      width: 11px;
+      width: 13px;
       border-radius: 3px 3px 0 0;
       transform-origin: bottom center;
       animation: eq-bounce var(--dur, 1.2s) ease-in-out infinite;
@@ -139,7 +139,7 @@
       display: flex;
       align-items: center;      /* vertical centre */
       justify-content: center;  /* horizontal centre */
-      padding: 12px 165px;      /* 165px clears the fixed bars */
+      padding: 12px 250px;      /* 250px clears the wider fixed bars */
       z-index: 2;
       overflow: hidden;
     }
@@ -228,7 +228,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 175px 14px;   /* 175px clears the fixed bars */
+      padding: 8px 250px 14px;   /* 250px clears the wider fixed bars */
       gap: 12px;
       z-index: 2;
       flex-shrink: 0;
@@ -339,7 +339,7 @@
     }
 
     // ── Generate EQ bars ─────────────────────────────
-    var BAR_HEIGHTS = [55, 95, 140, 170, 200, 180, 220, 190, 150, 110, 80, 60];
+    var BAR_HEIGHTS = [40, 65, 100, 130, 160, 185, 210, 230, 215, 195, 170, 145, 115, 85, 60, 42];
 
     function makeBars(id, colorA, colorB) {
       var el = document.getElementById(id);
