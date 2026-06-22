@@ -230,6 +230,25 @@
       font-size: 0.78em;
     }
 
+    /* Prize giving rows get gold treatment */
+    #upNext li.prize {
+      color: #FFD700;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    #upNext li.prize .num {
+      color: #FFD700;
+      font-size: 1em;
+    }
+
+    #onStage.prize-giving {
+      color: #FFD700;
+    }
+    .card.active.prize-giving-card {
+      border-color: rgba(255,215,0,0.4);
+      box-shadow: 0 0 20px rgba(255,215,0,0.15), inset 0 0 20px rgba(255,215,0,0.06);
+    }
+
     #upNext li.empty {
       color: rgba(255,255,255,0.22);
       font-style: italic;
@@ -488,13 +507,17 @@
       var statusEl    = document.getElementById('status');
 
       if (data && data.onStage) {
+        var isPrize = data.onStage.indexOf('PRIZE GIVING') === 0;
         onStageEl.textContent = data.onStage;
         onStageEl.classList.remove('waiting');
+        onStageEl.classList.toggle('prize-giving', isPrize);
         onStageCard.classList.add('active');
+        onStageCard.classList.toggle('prize-giving-card', isPrize);
       } else {
         onStageEl.textContent = '— Waiting —';
         onStageEl.classList.add('waiting');
-        onStageCard.classList.remove('active');
+        onStageEl.classList.remove('prize-giving');
+        onStageCard.classList.remove('active', 'prize-giving-card');
       }
 
       upNextEl.innerHTML = '';
@@ -502,10 +525,18 @@
         data.upNext.forEach(function(text, i) {
           var li = document.createElement('li');
           li.style.animationDelay = (i * 0.05) + 's';
-          var match = text.match(/^#(\d+)\s*/);
-          var num = match ? match[1] : (i + 1);
-          var label = match ? text.replace(/^#\d+\s*/, '') : text;
-          li.innerHTML = '<span class="num">' + num + '</span><span>' + escapeHtml(label) + '</span>';
+          var isPrize = text.indexOf('PRIZE GIVING') === 0;
+          if (isPrize) {
+            li.className = 'prize';
+            // Strip the "PRIZE GIVING  —  " prefix for cleaner display
+            var detail = text.replace(/^PRIZE GIVING\s*[—-]+\s*/i, '');
+            li.innerHTML = '<span class="num">★</span><span>' + escapeHtml(detail) + '</span>';
+          } else {
+            var match = text.match(/^#(\d+)\s*/);
+            var num   = match ? match[1] : (i + 1);
+            var label = match ? text.replace(/^#\d+\s*/, '') : text;
+            li.innerHTML = '<span class="num">' + num + '</span><span>' + escapeHtml(label) + '</span>';
+          }
           upNextEl.appendChild(li);
         });
       } else {

@@ -46,53 +46,87 @@ function getStageData() {
   var sheet = ss.getSheetByName(TAB_NAME);
   var data  = sheet.getDataRange().getValues();
 
-  function isItemRow(row) {
-    return /^\d+$/.test(String(row[COL_ITEM] || '').trim());
-  }
-
   function isBool(val) {
     if (typeof val === 'boolean') return val;
     var s = String(val || '').toLowerCase().trim();
     return s === 'yes' || s === 'true' || s === '1';
   }
 
+  function isItemRow(row) {
+    return /^\d+$/.test(String(row[COL_ITEM] || '').trim());
+  }
+
+  // Detect prize giving / awards rows (non-numeric item column but has "prize" or "award" text)
+  function isPrizeRow(row) {
+    if (isItemRow(row)) return false; // already handled as a dance item
+    var checkCols = [COL_ITEM, COL_TITLE, COL_STYLE, COL_CAT];
+    for (var c = 0; c < checkCols.length; c++) {
+      var v = String(row[checkCols[c]] || '').toLowerCase().trim();
+      if (v.indexOf('prize') >= 0 || v.indexOf('award') >= 0) return true;
+    }
+    return false;
+  }
+
+  function isDisplayRow(row) {
+    return isItemRow(row) || isPrizeRow(row);
+  }
+
   function formatItem(row) {
-    var item   = String(row[COL_ITEM]   || '').trim();
-    var title  = String(row[COL_TITLE]  || '').trim();
-    var studio = String(row[COL_STUDIO] || '').trim();
-    var age    = String(row[COL_AGE]    || '').trim();
-    var level  = String(row[COL_LEVEL]  || '').trim();
-    var cat    = String(row[COL_CAT]    || '').trim();
-    var style  = String(row[COL_STYLE]  || '').trim();
+    var item  = String(row[COL_ITEM]  || '').trim();
+    var title = String(row[COL_TITLE] || '').trim();
+    var age   = String(row[COL_AGE]   || '').trim();
+    var level = String(row[COL_LEVEL] || '').trim();
+    var cat   = String(row[COL_CAT]   || '').trim();
+    var style = String(row[COL_STYLE] || '').trim();
 
     var meta = [age, level, cat, style].filter(Boolean).join(' · ');
     var line = '#' + item;
-    if (title)  line += '  ' + title;
-    if (meta)   line += '  ·  ' + meta;
+    if (title) line += '  ' + title;
+    if (meta)  line += '  ·  ' + meta;
     return line;
+  }
+
+  function formatPrize(row) {
+    // Collect whatever descriptive text is available
+    var cols = [COL_ITEM, COL_TITLE, COL_STYLE, COL_CAT, COL_AGE, COL_LEVEL];
+    var parts = [];
+    for (var c = 0; c < cols.length; c++) {
+      var v = String(row[cols[c]] || '').trim();
+      if (v) parts.push(v);
+    }
+    // Deduplicate while keeping order
+    var seen = {}, unique = [];
+    for (var p = 0; p < parts.length; p++) {
+      if (!seen[parts[p]]) { seen[parts[p]] = true; unique.push(parts[p]); }
+    }
+    return 'PRIZE GIVING  —  ' + (unique.join('  ·  ') || 'Awards');
+  }
+
+  function formatRow(row) {
+    return isItemRow(row) ? formatItem(row) : formatPrize(row);
   }
 
   var onStageText = null;
   var onStageIdx  = -1;
 
   for (var i = 1; i < data.length; i++) {
-    if (!isItemRow(data[i])) continue;
+    if (!isDisplayRow(data[i])) continue;
     if (isBool(data[i][COL_ONSTAGE])) {
-      onStageText = formatItem(data[i]);
+      onStageText = formatRow(data[i]);
       onStageIdx  = i;
       break;
     }
   }
 
-  // Next 10 items that are not danced or scratched
-  var upNext     = [];
+  // Next 10 items (dance or prize giving) that are not yet danced or scratched
+  var upNext      = [];
   var startSearch = onStageIdx >= 0 ? onStageIdx + 1 : 1;
 
   for (var j = startSearch; j < data.length && upNext.length < 10; j++) {
-    if (!isItemRow(data[j]))          continue;
-    if (isBool(data[j][COL_SCRATCHED])) continue;
-    if (isBool(data[j][COL_DANCED]))    continue;
-    upNext.push(formatItem(data[j]));
+    if (!isDisplayRow(data[j]))           continue;
+    if (isBool(data[j][COL_SCRATCHED]))   continue;
+    if (isBool(data[j][COL_DANCED]))      continue;
+    upNext.push(formatRow(data[j]));
   }
 
   return { onStage: onStageText, upNext: upNext };
