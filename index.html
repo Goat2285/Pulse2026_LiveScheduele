@@ -2,15 +2,425 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Pulse 2026 — Live Schedule</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #0D1B2E; }
-    iframe { width: 100%; height: 100%; border: none; display: block; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 30% 10%, #1f0a35 0%, #0D1B2E 55%, #071525 100%);
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Sparkle stars ───────────────────────────────── */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      color: #fff;
+      animation: twinkle var(--tw-dur, 2s) ease-in-out infinite;
+      animation-delay: var(--tw-delay, 0s);
+      opacity: 0;
+      font-size: var(--tw-size, 14px);
+      line-height: 1;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0;   transform: scale(0.6); }
+      50%       { opacity: 0.8; transform: scale(1); }
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      text-align: center;
+      padding: 22px 20px 10px;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: clamp(2.8rem, 6.5vw, 5.2rem);
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow:
+        0 0 20px rgba(233,30,140,0.8),
+        0 0 50px rgba(233,30,140,0.4),
+        0 0 80px rgba(0,188,212,0.3);
+      line-height: 1;
+      margin-bottom: 6px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { text-shadow: 0 0 20px rgba(233,30,140,0.8), 0 0 50px rgba(233,30,140,0.4), 0 0 80px rgba(0,188,212,0.3); }
+      50%       { text-shadow: 0 0 30px rgba(233,30,140,1),   0 0 70px rgba(233,30,140,0.6), 0 0 110px rgba(0,188,212,0.5); }
+    }
+
+    .heartbeat-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 4px 0 6px;
+    }
+    .heartbeat-wrap svg {
+      width: clamp(200px, 40vw, 480px);
+      height: 28px;
+      overflow: visible;
+    }
+    .hb-line {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 4px #E91E8C) drop-shadow(0 0 10px #E91E8C);
+      stroke-dasharray: 600;
+      stroke-dashoffset: 600;
+      animation: draw-hb 2s ease forwards, hb-glow 2s ease-in-out 2s infinite;
+    }
+    @keyframes draw-hb {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes hb-glow {
+      0%, 100% { filter: drop-shadow(0 0 3px #E91E8C) drop-shadow(0 0 8px #E91E8C); }
+      50%       { filter: drop-shadow(0 0 6px #E91E8C) drop-shadow(0 0 18px #ff40b0); }
+    }
+
+    .header .sub {
+      font-size: clamp(0.8rem, 1.8vw, 1.05rem);
+      color: #00BCD4;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* ── EQ Bars ────────────────────────────────────── */
+    .bars-left, .bars-right {
+      position: fixed;
+      bottom: 0;
+      width: 240px;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0 10px 24px;
+      gap: 4px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .bars-left  { left: 0; }
+    .bars-right { right: 0; }
+
+    .eq-bar {
+      width: 13px;
+      border-radius: 3px 3px 0 0;
+      transform-origin: bottom center;
+      animation: eq-bounce var(--dur, 1.2s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes eq-bounce {
+      0%        { transform: scaleY(0.08); opacity: 0.5; }
+      45%, 55%  { transform: scaleY(1);    opacity: 1;   }
+      100%      { transform: scaleY(0.08); opacity: 0.5; }
+    }
+
+    /* ── Page centre ────────────────────────────────── */
+    .page-center {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 10px 250px 0;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .main {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card {
+      background: rgba(10, 12, 30, 0.75);
+      backdrop-filter: blur(8px);
+      border-radius: 14px;
+      padding: 18px 26px;
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .on-stage-label { color: #00BCD4; }
+    .up-next-label  { color: #E91E8C; }
+
+    #onStage {
+      font-size: clamp(1.6rem, 3.5vh, 2.8rem);
+      font-weight: 700;
+      line-height: 1.3;
+      color: #fff;
+    }
+    #onStage.waiting {
+      color: rgba(255,255,255,0.28);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .card.active {
+      border-color: rgba(0,188,212,0.35);
+      box-shadow: 0 0 20px rgba(0,188,212,0.15), inset 0 0 20px rgba(0,188,212,0.05);
+    }
+
+    .card-upnext {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #upNext {
+      list-style: none;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #upNext li {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.9);
+      font-size: clamp(1rem, 2.6vh, 2rem);
+      font-weight: 500;
+      animation: slide-in 0.35s ease both;
+    }
+    #upNext li:last-child { border-bottom: none; }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    #upNext li .num {
+      flex-shrink: 0;
+      min-width: 2.2em;
+      color: #00BCD4;
+      font-weight: 800;
+      font-size: 0.78em;
+    }
+
+    #upNext li.prize {
+      color: #FFD700;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    #upNext li.prize .num {
+      color: #FFD700;
+      font-size: 1em;
+    }
+
+    #onStage.prize-giving { color: #FFD700; }
+    .card.active.prize-giving-card {
+      border-color: rgba(255,215,0,0.4);
+      box-shadow: 0 0 20px rgba(255,215,0,0.15), inset 0 0 20px rgba(255,215,0,0.06);
+    }
+
+    #upNext li.empty {
+      color: rgba(255,255,255,0.22);
+      font-style: italic;
+      justify-content: center;
+    }
+
+    /* ── Footer ─────────────────────────────────────── */
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 250px 14px;
+      gap: 12px;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .scripture {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.22);
+      letter-spacing: 0.06em;
+      font-style: italic;
+    }
+
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .qr-label {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .qr-wrap img {
+      width: 140px;
+      height: 140px;
+      border-radius: 10px;
+      opacity: 0.75;
+    }
+
+    /* ── Mobile ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .bars-left, .bars-right { display: none; }
+      .header { padding: 16px 12px 8px; }
+      .header h1 { font-size: clamp(2rem, 10vw, 3rem); }
+      .header .sub { font-size: 0.65rem; letter-spacing: 0.1em; }
+      .heartbeat-wrap svg { width: 70vw; }
+      .page-center { padding: 8px 12px 0; }
+      .main { gap: 10px; }
+      .card { padding: 12px 16px; }
+      .card-label { font-size: 0.65rem; margin-bottom: 8px; }
+      #onStage { font-size: clamp(1.1rem, 4.5vw, 1.6rem); }
+      #upNext li { font-size: clamp(0.85rem, 3.8vw, 1.1rem); gap: 10px; }
+      .footer-row { padding: 6px 12px 10px; flex-direction: column; align-items: flex-start; gap: 6px; }
+      .qr-wrap { display: none; }
+      .status { align-self: flex-end; }
+    }
+
+    .status {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 0.08em;
+      text-align: center;
+      padding-bottom: 2px;
+    }
   </style>
 </head>
 <body>
-  <iframe src="https://script.google.com/macros/s/AKfycbxBImz83eDckG2wgQCKsmTyPvFKHZa0ltu8C5UXaGuInk8_w2Lh6YVbaz-Ki-_sZZlP8w/exec" allowfullscreen></iframe>
+
+  <div class="header">
+    <h1>PULSE 2026</h1>
+    <div class="heartbeat-wrap">
+      <svg viewBox="0 0 480 28" preserveAspectRatio="none">
+        <path class="hb-line" d="M0,14 L90,14 L105,14 L115,2 L125,26 L135,2 L145,26 L155,14 L165,14 L185,14 L200,14 L215,2 L230,26 L245,2 L260,26 L275,14 L295,14 L315,14 L330,2 L345,26 L360,2 L375,26 L390,14 L480,14"/>
+      </svg>
+    </div>
+    <div class="sub">The Red Convention &nbsp;·&nbsp; 23 - 28 June 2026 &nbsp;·&nbsp; Joburg Theatre</div>
+  </div>
+
+  <div class="bars-left" id="barsLeft"></div>
+
+  <div class="page-center">
+    <div class="main">
+      <div class="card" id="onStageCard">
+        <div class="card-label on-stage-label">On Stage</div>
+        <div id="onStage" class="waiting">— Waiting —</div>
+      </div>
+      <div class="card card-upnext">
+        <div class="card-label up-next-label">Up Next</div>
+        <ol id="upNext"><li class="empty">Loading…</li></ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="bars-right" id="barsRight"></div>
+
+  <div class="footer-row">
+    <div class="scripture">"David danced before the Lord with all his might." — 2 Samuel 6:14</div>
+    <div class="status" id="status">connecting…</div>
+    <div class="qr-wrap">
+      <div class="qr-label">Live Schedule ↓</div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=ffffff&bgcolor=071525&data=https://goat2285.github.io/Pulse2026_LiveScheduele/" alt="Scan for live schedule">
+    </div>
+  </div>
+
+  <script>
+    var API_URL = 'https://script.google.com/macros/s/AKfycbx5wDv51inyPQkuVEEBivihm6VUM6SX5NXZMHX-X_uAVbwuodWdOpdrhH6DksSM0Oy1/exec?json=1';
+
+    function fixHeight() { document.body.style.height = window.innerHeight + 'px'; }
+    window.addEventListener('resize', fixHeight); fixHeight();
+
+    function hexToRgb(h) { var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return [r,g,b]; }
+    function lerpColor(a,b,t) { var ca=hexToRgb(a),cb=hexToRgb(b); return 'rgb('+Math.round(ca[0]+(cb[0]-ca[0])*t)+','+Math.round(ca[1]+(cb[1]-ca[1])*t)+','+Math.round(ca[2]+(cb[2]-ca[2])*t)+')'; }
+    function rgbAlpha(rgb,a) { return rgb.replace('rgb(','rgba(').replace(')',','+a+')'); }
+
+    var BAR_HEIGHTS = [40,65,100,130,160,185,210,230,215,195,170,145,115,85,60,42];
+    function makeBars(id,colorA,colorB) {
+      var el=document.getElementById(id),n=BAR_HEIGHTS.length;
+      for(var i=0;i<n;i++){var bar=document.createElement('div');bar.className='eq-bar';var color=lerpColor(colorA,colorB,i/(n-1));var dur=(0.7+Math.random()*1.1).toFixed(2);var delay=-(Math.random()*2.5).toFixed(2);bar.style.height=BAR_HEIGHTS[i]+'px';bar.style.background=color;bar.style.boxShadow='0 0 8px '+color+', 0 0 22px '+rgbAlpha(color,0.45);bar.style.setProperty('--dur',dur+'s');bar.style.setProperty('--delay',delay+'s');el.appendChild(bar);}
+    }
+    makeBars('barsLeft','#E91E8C','#7B2D8B');
+    makeBars('barsRight','#7B2D8B','#00BCD4');
+
+    var STAR_POSITIONS=[{top:'6%',left:'4%',size:18,dur:2.2,delay:0.3},{top:'14%',left:'10%',size:10,dur:1.6,delay:0.9},{top:'38%',left:'2%',size:8,dur:2.8,delay:0.1},{top:'62%',left:'5%',size:12,dur:2.0,delay:1.4},{top:'80%',left:'8%',size:9,dur:1.8,delay:0.6},{top:'5%',right:'5%',size:16,dur:2.5,delay:0.5},{top:'22%',right:'3%',size:10,dur:1.9,delay:1.1},{top:'50%',right:'6%',size:8,dur:2.3,delay:0.2},{top:'72%',right:'4%',size:13,dur:1.7,delay:0.8},{top:'88%',right:'9%',size:7,dur:2.6,delay:1.6}];
+    STAR_POSITIONS.forEach(function(p){var s=document.createElement('div');s.className='sparkle';s.textContent='✦';s.style.setProperty('--tw-dur',p.dur+'s');s.style.setProperty('--tw-delay',p.delay+'s');s.style.setProperty('--tw-size',p.size+'px');s.style.top=p.top;if(p.left)s.style.left=p.left;if(p.right)s.style.right=p.right;var colors=['#E91E8C','#00BCD4','#ffffff','#7B2D8B'];s.style.color=colors[Math.floor(Math.random()*colors.length)];document.body.appendChild(s);});
+
+    var _lastOnStage=null,_lastUpNext=null;
+
+    function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+    function render(data){
+      var newOnStage=(data&&data.onStage)?data.onStage:null;
+      var newUpNext=(data&&data.upNext)?data.upNext.join('|'):'';
+      var changed=newOnStage!==_lastOnStage||newUpNext!==_lastUpNext;
+      _lastOnStage=newOnStage;_lastUpNext=newUpNext;
+      if(!changed){document.getElementById('status').textContent='updated '+new Date().toLocaleTimeString();return;}
+      var onStageEl=document.getElementById('onStage'),onStageCard=document.getElementById('onStageCard'),upNextEl=document.getElementById('upNext'),statusEl=document.getElementById('status');
+      if(data&&data.onStage){
+        var isPrize=data.onStage.indexOf('PRIZE GIVING')===0;
+        onStageEl.textContent=data.onStage;onStageEl.classList.remove('waiting');
+        onStageEl.classList.toggle('prize-giving',isPrize);
+        onStageCard.classList.add('active');onStageCard.classList.toggle('prize-giving-card',isPrize);
+      } else {
+        onStageEl.textContent='— Waiting —';onStageEl.classList.add('waiting');
+        onStageEl.classList.remove('prize-giving');onStageCard.classList.remove('active','prize-giving-card');
+      }
+      upNextEl.innerHTML='';
+      if(data&&data.upNext&&data.upNext.length>0){
+        data.upNext.forEach(function(text,i){
+          var li=document.createElement('li');li.style.animationDelay=(i*0.05)+'s';
+          var isPrize=text.indexOf('PRIZE GIVING')===0;
+          if(isPrize){li.className='prize';var detail=text.replace(/^PRIZE GIVING\s*[—-]+\s*/i,'');li.innerHTML='<span class="num">★</span><span>'+escapeHtml(detail)+'</span>';}
+          else{var match=text.match(/^#(\d+)\s*/);var num=match?match[1]:(i+1);var label=match?text.replace(/^#\d+\s*/,''):text;li.innerHTML='<span class="num">'+num+'</span><span>'+escapeHtml(label)+'</span>';}
+          upNextEl.appendChild(li);
+        });
+      } else {
+        var li=document.createElement('li');li.className='empty';li.textContent='— No upcoming items —';upNextEl.appendChild(li);
+      }
+      statusEl.textContent='updated '+new Date().toLocaleTimeString();
+    }
+
+    function onError(){document.getElementById('status').textContent='error — retrying…';}
+
+    function poll(){
+      fetch(API_URL)
+        .then(function(r){return r.json();})
+        .then(render)
+        .catch(onError);
+    }
+
+    poll();
+    setInterval(poll,5000);
+  </script>
 </body>
 </html>

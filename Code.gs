@@ -33,7 +33,14 @@ var COL_ONSTAGE   = 19;  // T — on stage  (checkbox / "Yes")
 var COL_DANCED    = 20;  // U — danced    (checkbox / "Yes")
 
 // ── Serve the HTML page ──────────────────────────────────────────────────────
-function doGet() {
+function doGet(e) {
+  // ?json=1  →  return schedule data as JSON (called by GitHub Pages via fetch)
+  if (e && e.parameter && e.parameter.json === '1') {
+    return ContentService
+      .createTextOutput(JSON.stringify(getStageData()))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  // Default: serve the full HTML page directly
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Pulse 2026 — Live Schedule')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
