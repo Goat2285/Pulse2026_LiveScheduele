@@ -446,7 +446,10 @@
         data.upNext.forEach(function(text, i) {
           var li = document.createElement('li');
           li.style.animationDelay = (i * 0.05) + 's';
-          li.innerHTML = '<span class="num">' + (i+1) + '.</span><span>' + escapeHtml(text) + '</span>';
+          var match = text.match(/^#(\d+)\s*/);
+          var num = match ? match[1] : (i + 1);
+          var label = match ? text.replace(/^#\d+\s*/, '') : text;
+          li.innerHTML = '<span class="num">' + num + '</span><span>' + escapeHtml(label) + '</span>';
           upNextEl.appendChild(li);
         });
       } else {
