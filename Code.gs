@@ -56,13 +56,16 @@ function getStageData() {
     return /^\d+$/.test(String(row[COL_ITEM] || '').trim());
   }
 
-  // Detect prize giving / awards rows (non-numeric item column but has "prize" or "award" text)
+  // Detect prize giving / awards rows — scan ALL columns for relevant keywords
+  var PRIZE_KEYWORDS = ['prize', 'award', 'ceremony', 'pg '];
   function isPrizeRow(row) {
-    if (isItemRow(row)) return false; // already handled as a dance item
-    var checkCols = [COL_ITEM, COL_TITLE, COL_STYLE, COL_CAT];
-    for (var c = 0; c < checkCols.length; c++) {
-      var v = String(row[checkCols[c]] || '').toLowerCase().trim();
-      if (v.indexOf('prize') >= 0 || v.indexOf('award') >= 0) return true;
+    if (isItemRow(row)) return false;
+    for (var c = 0; c < row.length; c++) {
+      var v = String(row[c] || '').toLowerCase().trim();
+      if (!v) continue;
+      for (var k = 0; k < PRIZE_KEYWORDS.length; k++) {
+        if (v.indexOf(PRIZE_KEYWORDS[k]) >= 0) return true;
+      }
     }
     return false;
   }
@@ -87,19 +90,16 @@ function getStageData() {
   }
 
   function formatPrize(row) {
-    // Collect whatever descriptive text is available
-    var cols = [COL_ITEM, COL_TITLE, COL_STYLE, COL_CAT, COL_AGE, COL_LEVEL];
-    var parts = [];
-    for (var c = 0; c < cols.length; c++) {
-      var v = String(row[cols[c]] || '').trim();
-      if (v) parts.push(v);
+    // Scan all columns for meaningful text (skip empty, skip pure numbers, skip time-like values)
+    var seen = {}, parts = [];
+    for (var c = 0; c < row.length; c++) {
+      var v = String(row[c] || '').trim();
+      if (!v) continue;
+      if (/^\d+$/.test(v)) continue;           // skip pure numbers
+      if (/^\d{1,2}:\d{2}$/.test(v)) continue; // skip times like 13:47
+      if (!seen[v]) { seen[v] = true; parts.push(v); }
     }
-    // Deduplicate while keeping order
-    var seen = {}, unique = [];
-    for (var p = 0; p < parts.length; p++) {
-      if (!seen[parts[p]]) { seen[parts[p]] = true; unique.push(parts[p]); }
-    }
-    return 'PRIZE GIVING  —  ' + (unique.join('  ·  ') || 'Awards');
+    return 'PRIZE GIVING  —  ' + (parts.join('  ·  ') || 'Awards Ceremony');
   }
 
   function formatRow(row) {
