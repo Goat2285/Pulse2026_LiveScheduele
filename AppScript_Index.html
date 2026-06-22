@@ -375,6 +375,9 @@
     });
 
     // ── Render ───────────────────────────────────────
+    var _lastOnStage = null;
+    var _lastUpNext  = null;
+
     function escapeHtml(s) {
       return String(s)
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -382,6 +385,16 @@
     }
 
     function render(data) {
+      // Only update DOM when something actually changed
+      var newOnStage = (data && data.onStage) ? data.onStage : null;
+      var newUpNext  = (data && data.upNext)  ? data.upNext.join('|') : '';
+      var changed    = newOnStage !== _lastOnStage || newUpNext !== _lastUpNext;
+      _lastOnStage   = newOnStage;
+      _lastUpNext    = newUpNext;
+      if (!changed) {
+        document.getElementById('status').textContent = 'updated ' + new Date().toLocaleTimeString();
+        return;
+      }
       var onStageEl   = document.getElementById('onStage');
       var onStageCard = document.getElementById('onStageCard');
       var upNextEl    = document.getElementById('upNext');
