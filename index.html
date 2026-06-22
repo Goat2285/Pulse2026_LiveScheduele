@@ -379,6 +379,9 @@
 
     function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+    var PRIZE_WORDS=['prize','award','ceremony','pg '];
+    function isPrizeText(t){var l=t.toLowerCase();for(var i=0;i<PRIZE_WORDS.length;i++){if(l.indexOf(PRIZE_WORDS[i])>=0)return true;}return false;}
+
     function render(data){
       var newOnStage=(data&&data.onStage)?data.onStage:null;
       var newUpNext=(data&&data.upNext)?data.upNext.join('|'):'';
@@ -387,7 +390,7 @@
       if(!changed){document.getElementById('status').textContent='updated '+new Date().toLocaleTimeString();return;}
       var onStageEl=document.getElementById('onStage'),onStageCard=document.getElementById('onStageCard'),upNextEl=document.getElementById('upNext'),statusEl=document.getElementById('status');
       if(data&&data.onStage){
-        var isPrize=data.onStage.indexOf('PRIZE GIVING')===0;
+        var isPrize=isPrizeText(data.onStage);
         onStageEl.textContent=data.onStage;onStageEl.classList.remove('waiting');
         onStageEl.classList.toggle('prize-giving',isPrize);
         onStageCard.classList.add('active');onStageCard.classList.toggle('prize-giving-card',isPrize);
@@ -399,9 +402,9 @@
       if(data&&data.upNext&&data.upNext.length>0){
         data.upNext.forEach(function(text,i){
           var li=document.createElement('li');li.style.animationDelay=(i*0.05)+'s';
-          var isPrize=text.indexOf('PRIZE GIVING')===0;
-          if(isPrize){li.className='prize';var detail=text.replace(/^PRIZE GIVING\s*[—-]+\s*/i,'');li.innerHTML='<span class="num">★</span><span>'+escapeHtml(detail)+'</span>';}
-          else{var match=text.match(/^#(\d+)\s*/);var num=match?match[1]:(i+1);var label=match?text.replace(/^#\d+\s*/,''):text;li.innerHTML='<span class="num">'+num+'</span><span>'+escapeHtml(label)+'</span>';}
+          var isPrize=isPrizeText(text);
+          if(isPrize){li.className='prize';li.innerHTML='<span class="num">★</span><span>'+escapeHtml(text)+'</span>';}
+          else{var match=text.match(/^#(\d+)\s*/);if(match){var num=match[1];var label=text.replace(/^#\d+\s*/,'');li.innerHTML='<span class="num">'+num+'</span><span>'+escapeHtml(label)+'</span>';}else{li.innerHTML='<span class="num">—</span><span>'+escapeHtml(text)+'</span>';}}
           upNextEl.appendChild(li);
         });
       } else {

@@ -96,12 +96,14 @@ function getStageData() {
     return line;
   }
 
-  function formatPrize() {
-    return 'PRIZE GIVING';
-  }
-
   function formatRow(row) {
-    return isItemRow(row) ? formatItem(row) : formatPrize();
+    if (isItemRow(row)) return formatItem(row);
+    for (var c = 0; c < row.length; c++) {
+      if (typeof row[c] !== 'string') continue;
+      var v = row[c].trim();
+      if (v) return v;
+    }
+    return 'PRIZE GIVING';
   }
 
   var onStageText = null;
