@@ -7,177 +7,277 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
-      min-height: 100vh;
-      background: linear-gradient(160deg, #0D1B2E 0%, #1A0A2E 60%, #0D1B2E 100%);
-      color: #ffffff;
+      background: radial-gradient(ellipse at 30% 10%, #1f0a35 0%, #0D1B2E 55%, #071525 100%);
+      color: #fff;
       font-family: 'Segoe UI', Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 28px 24px 18px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 160px 1fr 160px;
+      grid-template-areas:
+        "hdr  hdr  hdr"
+        "bl   main br"
+        "ftr  ftr  ftr";
+      min-height: 100vh;
+    }
+
+    /* ── Sparkle stars ───────────────────────────────── */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      color: #fff;
+      animation: twinkle var(--tw-dur, 2s) ease-in-out infinite;
+      animation-delay: var(--tw-delay, 0s);
+      opacity: 0;
+      font-size: var(--tw-size, 14px);
+      line-height: 1;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0;   transform: scale(0.6); }
+      50%       { opacity: 0.8; transform: scale(1); }
     }
 
     /* ── Header ─────────────────────────────────────── */
     .header {
+      grid-area: hdr;
       text-align: center;
-      margin-bottom: 22px;
+      padding: 22px 20px 10px;
+      position: relative;
+      z-index: 2;
     }
 
     .header h1 {
-      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-size: clamp(2.8rem, 6.5vw, 5.2rem);
       font-weight: 900;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #ffffff;
-      text-shadow: 0 0 28px rgba(233, 30, 140, 0.7), 0 0 60px rgba(0, 188, 212, 0.3);
+      color: #fff;
+      text-shadow:
+        0 0 20px rgba(233,30,140,0.8),
+        0 0 50px rgba(233,30,140,0.4),
+        0 0 80px rgba(0,188,212,0.3);
       line-height: 1;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { text-shadow: 0 0 20px rgba(233,30,140,0.8), 0 0 50px rgba(233,30,140,0.4), 0 0 80px rgba(0,188,212,0.3); }
+      50%       { text-shadow: 0 0 30px rgba(233,30,140,1),   0 0 70px rgba(233,30,140,0.6), 0 0 110px rgba(0,188,212,0.5); }
+    }
+
+    /* Heartbeat SVG line */
+    .heartbeat-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 4px 0 6px;
+    }
+    .heartbeat-wrap svg {
+      width: clamp(200px, 40vw, 480px);
+      height: 28px;
+      overflow: visible;
+    }
+    .hb-line {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 4px #E91E8C) drop-shadow(0 0 10px #E91E8C);
+      stroke-dasharray: 600;
+      stroke-dashoffset: 600;
+      animation: draw-hb 2s ease forwards, hb-glow 2s ease-in-out 2s infinite;
+    }
+    @keyframes draw-hb {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes hb-glow {
+      0%, 100% { filter: drop-shadow(0 0 3px #E91E8C) drop-shadow(0 0 8px #E91E8C); }
+      50%       { filter: drop-shadow(0 0 6px #E91E8C) drop-shadow(0 0 18px #ff40b0); }
     }
 
     .header .sub {
-      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      font-size: clamp(0.8rem, 1.8vw, 1.05rem);
       color: #00BCD4;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       font-weight: 500;
     }
 
-    /* ── Sections ───────────────────────────────────── */
-    .sections {
-      width: 100%;
-      max-width: 1000px;
+    /* ── EQ Bars (left & right) ─────────────────────── */
+    .bars-left, .bars-right {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0 8px 24px;
+      gap: 5px;
+      z-index: 1;
+    }
+    .bars-left  { grid-area: bl; }
+    .bars-right { grid-area: br; }
+
+    .eq-bar {
+      width: 11px;
+      border-radius: 3px 3px 0 0;
+      transform-origin: bottom center;
+      animation: eq-bounce var(--dur, 1.2s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes eq-bounce {
+      0%        { transform: scaleY(0.08); opacity: 0.5; }
+      45%, 55%  { transform: scaleY(1);    opacity: 1;   }
+      100%      { transform: scaleY(0.08); opacity: 0.5; }
+    }
+
+    /* ── Main content ────────────────────────────────── */
+    .main {
+      grid-area: main;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      flex: 1;
+      gap: 14px;
+      padding: 12px 12px 16px;
+      overflow: hidden;
+      z-index: 2;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(10, 12, 30, 0.75);
+      backdrop-filter: blur(8px);
       border-radius: 14px;
-      padding: 22px 32px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 18px 26px;
+      border: 1px solid rgba(255,255,255,0.09);
     }
 
     .card-label {
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.28em;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-
     .on-stage-label { color: #00BCD4; }
     .up-next-label  { color: #E91E8C; }
 
-    /* ON STAGE */
     #onStage {
-      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+      font-size: clamp(1.3rem, 3vw, 2rem);
       font-weight: 700;
       line-height: 1.4;
-      color: #ffffff;
-      min-height: 2.8rem;
+      color: #fff;
+      min-height: 2.4rem;
+      transition: opacity 0.4s;
     }
-
     #onStage.waiting {
-      color: rgba(255, 255, 255, 0.3);
+      color: rgba(255,255,255,0.28);
       font-style: italic;
       font-weight: 400;
     }
 
-    /* UP NEXT */
-    #upNext {
-      list-style: none;
+    /* On Stage card glows when something is on stage */
+    .card.active {
+      border-color: rgba(0,188,212,0.35);
+      box-shadow: 0 0 20px rgba(0,188,212,0.15), inset 0 0 20px rgba(0,188,212,0.05);
     }
 
+    #upNext { list-style: none; }
+
     #upNext li {
-      font-size: clamp(1rem, 2.4vw, 1.3rem);
-      line-height: 1.6;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      color: rgba(255, 255, 255, 0.9);
+      font-size: clamp(0.9rem, 2vw, 1.15rem);
+      line-height: 1.55;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.88);
       display: flex;
       align-items: baseline;
       gap: 10px;
+      animation: slide-in 0.35s ease both;
     }
-
     #upNext li:last-child { border-bottom: none; }
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
 
     #upNext li .num {
       flex-shrink: 0;
       min-width: 2em;
       color: #00BCD4;
       font-weight: 800;
-      font-size: 0.85em;
-      opacity: 0.9;
+      font-size: 0.82em;
     }
 
     #upNext li.empty {
-      color: rgba(255, 255, 255, 0.25);
+      color: rgba(255,255,255,0.22);
       font-style: italic;
     }
 
-    /* ── Footer row ─────────────────────────────────── */
+    /* ── Footer ─────────────────────────────────────── */
     .footer-row {
-      width: 100%;
-      max-width: 1000px;
+      grid-area: ftr;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 18px;
+      padding: 8px 24px 14px;
       gap: 12px;
+      z-index: 2;
     }
 
     .scripture {
-      font-size: 0.82rem;
-      color: rgba(255, 255, 255, 0.28);
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.22);
       letter-spacing: 0.06em;
       font-style: italic;
     }
 
-    .qr-wrap { flex-shrink: 0; }
-
     .qr-wrap img {
-      width: 100px;
-      height: 100px;
+      width: 88px;
+      height: 88px;
       border-radius: 8px;
-      opacity: 0.75;
+      opacity: 0.65;
     }
 
-    /* ── Pulse glow accent bar ──────────────────────── */
-    .accent-bar {
-      width: 100%;
-      max-width: 1000px;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, #E91E8C, #7B2D8B, #00BCD4, transparent);
-      border-radius: 2px;
-      margin-bottom: 22px;
-      opacity: 0.6;
-    }
-
-    /* ── Status ─────────────────────────────────────── */
     .status {
-      font-size: 0.68rem;
-      color: rgba(255, 255, 255, 0.18);
-      text-align: right;
-      margin-top: 6px;
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.15);
       letter-spacing: 0.08em;
+      text-align: center;
+      padding-bottom: 2px;
     }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <div class="header">
     <h1>PULSE 2026</h1>
+    <div class="heartbeat-wrap">
+      <!-- Heartbeat / ECG line SVG -->
+      <svg viewBox="0 0 480 28" preserveAspectRatio="none">
+        <path class="hb-line" d="
+          M0,14
+          L90,14
+          L105,14 L115,2 L125,26 L135,2 L145,26 L155,14
+          L165,14
+          L185,14
+          L200,14 L215,2 L230,26 L245,2 L260,26 L275,14
+          L295,14
+          L315,14 L330,2 L345,26 L360,2 L375,26 L390,14
+          L480,14
+        "/>
+      </svg>
+    </div>
     <div class="sub">The Red Convention &nbsp;·&nbsp; 23 - 28 June 2026 &nbsp;·&nbsp; Joburg Theatre</div>
   </div>
 
-  <div class="accent-bar"></div>
+  <!-- Left bars -->
+  <div class="bars-left" id="barsLeft"></div>
 
-  <div class="sections">
-
-    <div class="card">
+  <!-- Main content -->
+  <div class="main">
+    <div class="card" id="onStageCard">
       <div class="card-label on-stage-label">On Stage</div>
       <div id="onStage" class="waiting">— Waiting —</div>
     </div>
@@ -188,38 +288,121 @@
         <li class="empty">Loading…</li>
       </ol>
     </div>
-
   </div>
 
+  <!-- Right bars -->
+  <div class="bars-right" id="barsRight"></div>
+
+  <!-- Footer -->
   <div class="footer-row">
     <div class="scripture">"David danced before the Lord with all his might." — 2 Samuel 6:14</div>
+    <div class="status" id="status">connecting…</div>
     <div class="qr-wrap">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=ffffff&bgcolor=0D1B2E&data=https://goat2285.github.io/Pulse2026_LiveScheduele/"
-           alt="Live schedule QR code" title="Scan for live schedule">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=ffffff&bgcolor=071525&data=https://goat2285.github.io/Pulse2026_LiveScheduele/"
+           alt="Scan for live schedule">
     </div>
   </div>
 
-  <div class="status" id="status">connecting…</div>
-
   <script>
+    // ── Color helpers ────────────────────────────────
+    function hexToRgb(h) {
+      var r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+      return [r,g,b];
+    }
+    function lerpColor(a, b, t) {
+      var ca = hexToRgb(a), cb = hexToRgb(b);
+      var r = Math.round(ca[0] + (cb[0]-ca[0])*t);
+      var g = Math.round(ca[1] + (cb[1]-ca[1])*t);
+      var bl= Math.round(ca[2] + (cb[2]-ca[2])*t);
+      return 'rgb('+r+','+g+','+bl+')';
+    }
+    function rgbAlpha(rgb, a) {
+      return rgb.replace('rgb(','rgba(').replace(')',','+a+')');
+    }
+
+    // ── Generate EQ bars ─────────────────────────────
+    var BAR_HEIGHTS = [55, 95, 140, 170, 200, 180, 220, 190, 150, 110, 80, 60];
+
+    function makeBars(id, colorA, colorB) {
+      var el = document.getElementById(id);
+      var n  = BAR_HEIGHTS.length;
+      for (var i = 0; i < n; i++) {
+        var bar   = document.createElement('div');
+        bar.className = 'eq-bar';
+        var color = lerpColor(colorA, colorB, i / (n - 1));
+        var dur   = (0.7 + Math.random() * 1.1).toFixed(2);
+        var delay = -(Math.random() * 2.5).toFixed(2);
+        bar.style.height           = BAR_HEIGHTS[i] + 'px';
+        bar.style.background       = color;
+        bar.style.boxShadow        = '0 0 8px ' + color + ', 0 0 22px ' + rgbAlpha(color, 0.45);
+        bar.style.setProperty('--dur',   dur + 's');
+        bar.style.setProperty('--delay', delay + 's');
+        el.appendChild(bar);
+      }
+    }
+
+    makeBars('barsLeft',  '#E91E8C', '#7B2D8B');
+    makeBars('barsRight', '#7B2D8B', '#00BCD4');
+
+    // ── Sparkle stars ────────────────────────────────
+    var STAR_POSITIONS = [
+      {top:'6%',  left:'4%',  size:18, dur:2.2, delay:0.3},
+      {top:'14%', left:'10%', size:10, dur:1.6, delay:0.9},
+      {top:'38%', left:'2%',  size:8,  dur:2.8, delay:0.1},
+      {top:'62%', left:'5%',  size:12, dur:2.0, delay:1.4},
+      {top:'80%', left:'8%',  size:9,  dur:1.8, delay:0.6},
+      {top:'5%',  right:'5%', size:16, dur:2.5, delay:0.5},
+      {top:'22%', right:'3%', size:10, dur:1.9, delay:1.1},
+      {top:'50%', right:'6%', size:8,  dur:2.3, delay:0.2},
+      {top:'72%', right:'4%', size:13, dur:1.7, delay:0.8},
+      {top:'88%', right:'9%', size:7,  dur:2.6, delay:1.6},
+    ];
+
+    STAR_POSITIONS.forEach(function(p) {
+      var s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = '✦';
+      s.style.setProperty('--tw-dur',   p.dur   + 's');
+      s.style.setProperty('--tw-delay', p.delay + 's');
+      s.style.setProperty('--tw-size',  p.size  + 'px');
+      s.style.top  = p.top;
+      if (p.left)  s.style.left  = p.left;
+      if (p.right) s.style.right = p.right;
+      // alternate pink/cyan/white
+      var colors = ['#E91E8C','#00BCD4','#ffffff','#7B2D8B'];
+      s.style.color = colors[Math.floor(Math.random() * colors.length)];
+      document.body.appendChild(s);
+    });
+
+    // ── Render ───────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     function render(data) {
-      var onStageEl = document.getElementById('onStage');
-      var upNextEl  = document.getElementById('upNext');
-      var statusEl  = document.getElementById('status');
+      var onStageEl   = document.getElementById('onStage');
+      var onStageCard = document.getElementById('onStageCard');
+      var upNextEl    = document.getElementById('upNext');
+      var statusEl    = document.getElementById('status');
 
       if (data && data.onStage) {
         onStageEl.textContent = data.onStage;
         onStageEl.classList.remove('waiting');
+        onStageCard.classList.add('active');
       } else {
         onStageEl.textContent = '— Waiting —';
         onStageEl.classList.add('waiting');
+        onStageCard.classList.remove('active');
       }
 
       upNextEl.innerHTML = '';
       if (data && data.upNext && data.upNext.length > 0) {
         data.upNext.forEach(function(text, i) {
           var li = document.createElement('li');
-          li.innerHTML = '<span class="num">' + (i + 1) + '.</span><span>' + escapeHtml(text) + '</span>';
+          li.style.animationDelay = (i * 0.05) + 's';
+          li.innerHTML = '<span class="num">' + (i+1) + '.</span><span>' + escapeHtml(text) + '</span>';
           upNextEl.appendChild(li);
         });
       } else {
@@ -229,20 +412,11 @@
         upNextEl.appendChild(li);
       }
 
-      var now = new Date();
-      statusEl.textContent = 'updated ' + now.toLocaleTimeString();
+      statusEl.textContent = 'updated ' + new Date().toLocaleTimeString();
     }
 
-    function onError(err) {
+    function onError() {
       document.getElementById('status').textContent = 'error — retrying…';
-    }
-
-    function escapeHtml(s) {
-      return String(s)
-        .replace(/&/g,  '&amp;')
-        .replace(/</g,  '&lt;')
-        .replace(/>/g,  '&gt;')
-        .replace(/"/g,  '&quot;');
     }
 
     function poll() {
@@ -255,6 +429,5 @@
     poll();
     setInterval(poll, 5000);
   </script>
-
 </body>
 </html>
