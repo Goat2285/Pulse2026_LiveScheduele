@@ -254,11 +254,66 @@
       font-style: italic;
     }
 
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .qr-label {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      font-weight: 600;
+    }
+
     .qr-wrap img {
       width: 140px;
       height: 140px;
       border-radius: 10px;
       opacity: 0.75;
+    }
+
+    /* ── Mobile (phones) ─────────────────────────────── */
+    @media (max-width: 768px) {
+      .bars-left, .bars-right { display: none; }
+
+      .header { padding: 16px 12px 8px; }
+
+      .header h1 { font-size: clamp(2rem, 10vw, 3rem); }
+
+      .header .sub { font-size: 0.65rem; letter-spacing: 0.1em; }
+
+      .heartbeat-wrap svg { width: 70vw; }
+
+      .page-center { padding: 8px 12px 0; }
+
+      .main { gap: 10px; }
+
+      .card { padding: 12px 16px; }
+
+      .card-label { font-size: 0.65rem; margin-bottom: 8px; }
+
+      #onStage { font-size: clamp(1.1rem, 4.5vw, 1.6rem); }
+
+      #upNext li {
+        font-size: clamp(0.85rem, 3.8vw, 1.1rem);
+        gap: 10px;
+      }
+
+      .footer-row {
+        padding: 6px 12px 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      .qr-wrap { display: none; } /* no point scanning a QR on your phone */
+
+      .status { align-self: flex-end; }
     }
 
     .status {
@@ -322,6 +377,7 @@
     <div class="scripture">"David danced before the Lord with all his might." — 2 Samuel 6:14</div>
     <div class="status" id="status">connecting…</div>
     <div class="qr-wrap">
+      <div class="qr-label">Live Schedule ↓</div>
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=ffffff&bgcolor=071525&data=https://goat2285.github.io/Pulse2026_LiveScheduele/"
            alt="Scan for live schedule">
     </div>
