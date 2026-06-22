@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pulse 2026 — Live Schedule</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0D1B2E 0%, #1A0A2E 60%, #0D1B2E 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 24px 18px;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .header h1 {
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 0 28px rgba(233, 30, 140, 0.7), 0 0 60px rgba(0, 188, 212, 0.3);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .header .sub {
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      color: #00BCD4;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* ── Sections ───────────────────────────────────── */
+    .sections {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 22px 32px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .on-stage-label { color: #00BCD4; }
+    .up-next-label  { color: #E91E8C; }
+
+    /* ON STAGE */
+    #onStage {
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.4;
+      color: #ffffff;
+      min-height: 2.8rem;
+    }
+
+    #onStage.waiting {
+      color: rgba(255, 255, 255, 0.3);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    /* UP NEXT */
+    #upNext {
+      list-style: none;
+    }
+
+    #upNext li {
+      font-size: clamp(1rem, 2.4vw, 1.3rem);
+      line-height: 1.6;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    #upNext li:last-child { border-bottom: none; }
+
+    #upNext li .num {
+      flex-shrink: 0;
+      min-width: 2em;
+      color: #00BCD4;
+      font-weight: 800;
+      font-size: 0.85em;
+      opacity: 0.9;
+    }
+
+    #upNext li.empty {
+      color: rgba(255, 255, 255, 0.25);
+      font-style: italic;
+    }
+
+    /* ── Footer row ─────────────────────────────────── */
+    .footer-row {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+      gap: 12px;
+    }
+
+    .scripture {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.28);
+      letter-spacing: 0.06em;
+      font-style: italic;
+    }
+
+    .qr-wrap { flex-shrink: 0; }
+
+    .qr-wrap img {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      opacity: 0.75;
+    }
+
+    /* ── Pulse glow accent bar ──────────────────────── */
+    .accent-bar {
+      width: 100%;
+      max-width: 1000px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #E91E8C, #7B2D8B, #00BCD4, transparent);
+      border-radius: 2px;
+      margin-bottom: 22px;
+      opacity: 0.6;
+    }
+
+    /* ── Status ─────────────────────────────────────── */
+    .status {
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.18);
+      text-align: right;
+      margin-top: 6px;
+      letter-spacing: 0.08em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>PULSE 2026</h1>
+    <div class="sub">The Red Convention &nbsp;·&nbsp; 23 - 28 June 2026 &nbsp;·&nbsp; Joburg Theatre</div>
+  </div>
+
+  <div class="accent-bar"></div>
+
+  <div class="sections">
+
+    <div class="card">
+      <div class="card-label on-stage-label">On Stage</div>
+      <div id="onStage" class="waiting">— Waiting —</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label up-next-label">Up Next</div>
+      <ol id="upNext">
+        <li class="empty">Loading…</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <div class="footer-row">
+    <div class="scripture">"David danced before the Lord with all his might." — 2 Samuel 6:14</div>
+    <div class="qr-wrap">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=ffffff&bgcolor=0D1B2E&data=https://goat2285.github.io/Pulse2026_LiveScheduele/"
+           alt="Live schedule QR code" title="Scan for live schedule">
+    </div>
+  </div>
+
+  <div class="status" id="status">connecting…</div>
+
+  <script>
+    function render(data) {
+      var onStageEl = document.getElementById('onStage');
+      var upNextEl  = document.getElementById('upNext');
+      var statusEl  = document.getElementById('status');
+
+      if (data && data.onStage) {
+        onStageEl.textContent = data.onStage;
+        onStageEl.classList.remove('waiting');
+      } else {
+        onStageEl.textContent = '— Waiting —';
+        onStageEl.classList.add('waiting');
+      }
+
+      upNextEl.innerHTML = '';
+      if (data && data.upNext && data.upNext.length > 0) {
+        data.upNext.forEach(function(text, i) {
+          var li = document.createElement('li');
+          li.innerHTML = '<span class="num">' + (i + 1) + '.</span><span>' + escapeHtml(text) + '</span>';
+          upNextEl.appendChild(li);
+        });
+      } else {
+        var li = document.createElement('li');
+        li.className = 'empty';
+        li.textContent = '— No upcoming items —';
+        upNextEl.appendChild(li);
+      }
+
+      var now = new Date();
+      statusEl.textContent = 'updated ' + now.toLocaleTimeString();
+    }
+
+    function onError(err) {
+      document.getElementById('status').textContent = 'error — retrying…';
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;');
+    }
+
+    function poll() {
+      google.script.run
+        .withSuccessHandler(render)
+        .withFailureHandler(onError)
+        .getStageData();
+    }
+
+    poll();
+    setInterval(poll, 5000);
+  </script>
+
+</body>
+</html>

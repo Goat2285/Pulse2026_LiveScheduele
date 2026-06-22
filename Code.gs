@@ -68,7 +68,6 @@ function getStageData() {
     var meta = [age, level, cat, style].filter(Boolean).join(' · ');
     var line = '#' + item;
     if (title)  line += '  ' + title;
-    if (studio) line += '  |  ' + studio;
     if (meta)   line += '  ·  ' + meta;
     return line;
   }
